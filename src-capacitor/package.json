@@ -1,0 +1,14 @@
+{
+  "name": "scale-image-into-canvas",
+  "version": "0.0.1",
+  "description": "Crop image using canvas",
+  "author": "chie-ai <bacuetesarchie@gmail.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^5.2.2",
+    "@capacitor/app": "^5.0.0",
+    "@capacitor/camera": "^5.0.6",
+    "@capacitor/cli": "^5.0.0",
+    "@capacitor/core": "^5.0.0"
+  }
+}

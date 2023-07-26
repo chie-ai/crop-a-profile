@@ -1,0 +1,27 @@
+.target-profile {
+  background: transparent !important;
+  border-radius: 50%;
+  outline: 1000px solid rgba(0, 0, 0, 0.6);
+}
+
+.transition {
+  transition: top 0.4s, left 0.4s;
+}
+
+.canvas-profile-preview {
+  border-radius: 50%;
+  border: 5px solid $app-accent-0;
+}
+
+.profile-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crop-profile-inactive {
+  background: rgba(255, 255, 255, 0.4);
+}
+.crop-profile-active {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
