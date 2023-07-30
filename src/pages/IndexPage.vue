@@ -10,7 +10,7 @@
           class="absolute"
           :style="{ top: offsetTop+'px', left: offsetLeft+'px' }"
         />
-        <div :style="{width: `${canvasTargetScale}px`, height: `${canvasTargetScale}px` }" id="targetDimension" class="absolute-center target-profile" />
+        <div :style="{ width: `${canvasTargetScale}px`, height: `${canvasTargetScale}px` }" id="targetDimension" class="absolute-center target-profile" />
       </div>
     </div>
     <div class="col-12 q-px-lg">
@@ -21,7 +21,9 @@
         <img :src="newImg" alt="canvasProfilePreview" class="canvas-profile-preview">
       </div>
     </template>
+    <!-- Start: Web test -->
     <q-file @update:model-value="calculateProfileRatio" ref="selectProfile" class="q-mt-lg hidden" label="Upload picture" />
+    <!-- End -->
     <canvas id="canvas" class="hidden"></canvas>
     <canvas id="canvasTargetDimensions" class="hidden"></canvas>
   </div>
@@ -42,26 +44,29 @@
 <script>
 import { ref, onMounted, watch } from 'vue'
 import { Camera, CameraResultType } from '@capacitor/camera'
-import { useQuasar } from 'quasar'
+// import { useQuasar } from 'quasar'
 
 export default {
   name: 'CanvasPage',
-  setup() {
-    const $q = useQuasar()
+  setup () {
+    // const $q = useQuasar()
     const imageSrc = ref('')
     const selectProfile = ref(null)
 
-    // onMounted(async () => {
-    //   console.log('Permission status: ', await Camera.checkPermissions())
-    // })
+    onMounted(async () => {
+      console.log('Permission status: ', await Camera.checkPermissions())
+    })
 
     const getProfile = async (action) => {
       try {
         await Camera.requestPermissions()
-      } catch(err) {
+      } catch (err) {
         console.log(err)
+        // Start: Web test
+        selectProfile.value.pickFiles()
+        // End
       }
-      let permission = await Camera.checkPermissions()
+      const permission = await Camera.checkPermissions()
 
       if (permission.camera === 'granted' && permission.photos === 'granted') {
         const image = await Camera.getPhoto({
@@ -78,25 +83,13 @@ export default {
       }
     }
 
-    const canvasInitialConfiguration = () => {
-        offsetTop.value = 0
-        offsetLeft.value = 0
-        dimensionsResizer.value = 0
-        canvasAndContWidthDiff = window.innerWidth - canvasTargetScale.value
-        canvasAndContHeightDiff = profileContainerHeight.value - canvasTargetScale.value
-        defaultSx = canvasAndContWidthDiff / 2
-        defaultSy = canvasAndContHeightDiff / 2
-        dynamicSx = defaultSx
-        dynamicSy = defaultSy
-    }
-
     const profilePreview = ref(null)
     const imgPreview = ref(null)
     const profileContainerHeight = ref(window.innerWidth)
     const imageFile = ref(null)
     const profileAndContainerHeightDiff = ref(0)
     const profileAndContainerWidthDiff = ref(0)
-    const canvasTargetScale = ref(window.innerWidth * .90)
+    const canvasTargetScale = ref(window.innerWidth * 0.90)
     const newImg = ref(null)
     const dimensionsResizer = ref(0)
     const info = ref(null)
@@ -112,10 +105,22 @@ export default {
     let imagePreviewDynamicWidth = 0
     let imagePreviewDynamicHeight = 0
     let zoomLevel = 0 / 100
-    let MAX_WIDTH = window.innerWidth
-    let MAX_HEIGHT = window.innerHeight
+    const MAX_WIDTH = window.innerWidth
+    const MAX_HEIGHT = window.innerHeight
     let _image = null
-    let profileHeader = 0 // Not being used for the meantime
+    const profileHeader = 0 // Not being used for the meantime
+
+    const canvasInitialConfiguration = () => {
+      offsetTop.value = 0
+      offsetLeft.value = 0
+      dimensionsResizer.value = 0
+      canvasAndContWidthDiff = window.innerWidth - canvasTargetScale.value
+      canvasAndContHeightDiff = profileContainerHeight.value - canvasTargetScale.value
+      defaultSx = canvasAndContWidthDiff / 2
+      defaultSy = canvasAndContHeightDiff / 2
+      dynamicSx = defaultSx
+      dynamicSy = defaultSy
+    }
 
     const sliderPan = (phase) => {
       sliderPanning = (phase === 'start')
@@ -131,7 +136,7 @@ export default {
 
     watch(dimensionsResizer, (newVal) => {
       zoomLevel = (newVal / 100)
-      
+
       // Calculate the scaling factor to resize new image to
       // Fit MAX dimensions without overflow
       let scalingFactor = Math.min(MAX_WIDTH / _image.width, MAX_HEIGHT / _image.height)
@@ -141,25 +146,25 @@ export default {
       }
 
       // Calculate the resized image dimensions
-      let dimWidth = (_image.width * scalingFactor)
-      let dimHeight = (_image.height * scalingFactor)
+      const dimWidth = (_image.width * scalingFactor)
+      const dimHeight = (_image.height * scalingFactor)
 
       // Calculate the resized image dimensions with the given percentage;
       sx = (dimWidth + (dimWidth * zoomLevel))
       sy = (dimHeight + (dimHeight * zoomLevel))
 
-      let xDiff = sx - MAX_WIDTH
-      let yDiff = sy - profileContainerHeight.value
+      const xDiff = sx - MAX_WIDTH
+      const yDiff = sy - profileContainerHeight.value
 
       profileAndContainerWidthDiff.value = xDiff
       profileAndContainerHeightDiff.value = yDiff
 
-      profilePreview.value.style.width = sx+'px'
-      profilePreview.value.style.height = sy+'px'
+      profilePreview.value.style.width = sx + 'px'
+      profilePreview.value.style.height = sy + 'px'
 
       if (sliderPanning) {
-        let diffPreviewWidth = imagePreviewDynamicWidth - xDiff
-        let diffPreviewHeight = imagePreviewDynamicHeight - yDiff
+        const diffPreviewWidth = imagePreviewDynamicWidth - xDiff
+        const diffPreviewHeight = imagePreviewDynamicHeight - yDiff
 
         offsetLeft.value = offsetLeft.value + (diffPreviewWidth / 2)
         offsetTop.value = offsetTop.value + (diffPreviewHeight / 2)
@@ -178,12 +183,14 @@ export default {
       imagePreviewDynamicHeight = yDiff
     })
 
+    // Start: Web test
     const calculateProfileRatio = (file) => {
       canvasInitialConfiguration()
       imageFile.value = URL.createObjectURL(file)
 
       scaleImageIntoCanvas(imageFile.value, 0 / 100)
     }
+    // End
 
     const scaleImageIntoCanvas = (image, zoomlevel) => {
       _image = new Image()
@@ -200,8 +207,8 @@ export default {
         }
 
         // Calculate the resized image dimensions
-        let dimWidth = (_image.width * scalingFactor)
-        let dimHeight = (_image.height * scalingFactor)
+        const dimWidth = (_image.width * scalingFactor)
+        const dimHeight = (_image.height * scalingFactor)
 
         // Calculate the resized image dimensions with the given zoom level in percentage
         sx = (dimWidth + (dimWidth * zoomlevel))
@@ -209,19 +216,19 @@ export default {
         sy = (dimHeight + (dimHeight * zoomlevel))
 
         // Create a new canvas
-        let canvas = document.getElementById('canvas')
-        let ctx = canvas.getContext('2d')
+        const canvas = document.getElementById('canvas')
+        const ctx = canvas.getContext('2d')
 
         // Resize the canvas to the new dimensions
         canvas.width = sx
         canvas.height = sy
 
-        profilePreview.value.style.width = sx+'px'
-        profilePreview.value.style.height = sy+'px'
+        profilePreview.value.style.width = sx + 'px'
+        profilePreview.value.style.height = sy + 'px'
 
         // Get the vertical and horizontal difference between the image and container
-        let xDiff = sx - MAX_WIDTH
-        let yDiff = sy - profileContainerHeight.value
+        const xDiff = sx - MAX_WIDTH
+        const yDiff = sy - profileContainerHeight.value
 
         profileAndContainerWidthDiff.value = xDiff
         profileAndContainerHeightDiff.value = yDiff
@@ -238,13 +245,13 @@ export default {
     }
 
     const cropTargetCanvasDimensions = () => {
-      let img = new Image()
+      const img = new Image()
       img.crossOrigin = 'anonymous'
       img.src = imgPreview.value
       img.onload = function (evt) {
         // Create a new canvas
-        let canvasTargetDimensions = document.getElementById('canvasTargetDimensions')
-        let ctxScale = canvasTargetDimensions.getContext('2d')
+        const canvasTargetDimensions = document.getElementById('canvasTargetDimensions')
+        const ctxScale = canvasTargetDimensions.getContext('2d')
 
         // Resize the canvas to the new dimensions
         canvasTargetDimensions.width = canvasTargetScale.value
@@ -279,18 +286,16 @@ export default {
         leftCurrentPosition = offsetLeft.value
       }
 
-      let offsetLeft_ = (leftCurrentPosition + (newInfo.position.left - initialOffsetLeft))
+      const offsetLeft_ = (leftCurrentPosition + (newInfo.position.left - initialOffsetLeft))
       offsetLeft.value = offsetLeft_
 
-      let offsetTop_ = (topCurrentPosition + (newInfo.position.top - initialOffsetTop))
+      const offsetTop_ = (topCurrentPosition + (newInfo.position.top - initialOffsetTop))
       offsetTop.value = offsetTop_
 
       if (newInfo.isFirst) {
         panning.value = true
         profilePreview.value.classList.remove('transition')
-      }
-
-      else if (newInfo.isFinal) {
+      } else if (newInfo.isFinal) {
         panning.value = false
         profilePreview.value.classList.add('transition')
 
