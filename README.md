@@ -1,4 +1,4 @@
-# scaleimageintocanvas.app (scale-image-into-canvas)
+# (scale-image-into-canvas)
 
 Crop image using canvas
 
